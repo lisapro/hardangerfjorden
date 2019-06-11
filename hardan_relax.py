@@ -1,24 +1,21 @@
-'''
-Created on 16. mai 2017
-
-@author: ELP
-'''
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 '''
 Created on 11. mai 2017
 
+Module creates relaxation input files for Hardangerfjord modelling 
+
 @author: ELP
 '''
-
 import tkinter as tk
 import os,sys
 from netCDF4 import Dataset,num2date
 from PyQt5 import QtGui, QtCore
 import numpy as np
 import matplotlib.pyplot as plt
-
+import matplotlib.gridspec as gridspec
+from scipy import interpolate
 from tkinter.filedialog import askopenfilename
 
 #To show only the dialog without any other GUI elements
@@ -32,32 +29,20 @@ filetypes =(("NetCDF file", "*.nc"),
 
 fname = os.path.split(ask_filename)[1]
 print (ask_filename)
- 
 
 fh = Dataset(ask_filename)
 for names,vars in fh.variables.items():
     print (names, vars.units)
-#o2 = fh.variable
+
 time = np.array(fh.variables['time'][0:365])
 dates = num2date(time[:],units='days since 1985-01-01',
                  calendar='Gregorian' )
-
-
 depth = np.array(fh.variables['depth'][0:8])
-
-#o2 = np.array(fh.variables['O2o'][:,0:8,6,7]) 
-
-# 6,10 lat and lon , 59.8677, 4.9997
 
 #no3 = np.array(fh.variables['N3n'][:,0:8,13,15])
 po4 = np.array(fh.variables['N1p'][:,0:8,13,15])
 lat = np.array(fh.variables['lat'])
 lon = np.array(fh.variables['lon'])
-print (lon[7])
-
-import matplotlib.gridspec as gridspec
-from scipy import interpolate
-
 
 o2_field = [ 219.468, 243.293, 212.332 ]
 no3_field = [11.786,11.429, 12.857] #,      
@@ -77,8 +62,6 @@ for n in range(0,365):
     c = np.append([po4[n]],[po4_field])
     var_appended.append(c)
     
-#print ((o2_appended))
-
 # interpolate to model depths
 depth_new = [0,3,10,15,25,50,75,100,150,200,250,299.75,312.14,312.3571]
 var_int = []
@@ -113,9 +96,11 @@ for n in range(0,365):
     plt.plot(var_int[n],depth_new,'o--')
     #plt.plot(o2_hardanger[n],depth_new,'o--')
     #plt.plot(no3[n],depth)
+
 #plt.plot(o2_field,depth_field,'ko-')   
 #plt.plot(no3_field,depth_field,'ko-')   
-#plt.plot(po4_field,depth_field,'ko-')   
+#plt.plot(po4_field,depth_field,'ko-')
+#    
 plt.ylim(350,0)    
 plt.show()
 
@@ -124,8 +109,7 @@ plt.show()
 
 
 #print (days.shape, depth_hardanger.shape, o2_hardanger.shape)
-
-combined = np.vstack((days,depth_hardanger, var_hardanger)).T
+#combined = np.vstack((days,depth_hardanger, var_hardanger)).T
 #np.savetxt('hardanger_no3_out.dat', (combined), delimiter=' ')  
 #np.savetxt('hardanger_o2_out.dat', (combined), delimiter=' ')  
 #np.savetxt('hardanger_po4_out.dat', (combined), delimiter=' ') 
